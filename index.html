@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+<meta charset="UTF-8">
+<title>Sedulur Jogja Istimewa</title>
+
+<meta name="viewport"
+content="width=device-width,
+initial-scale=1,
+maximum-scale=1,
+user-scalable=no">
+
+<link rel="manifest" href="manifest.json">
+<meta name="theme-color" content="#ff7a00">
+
+<style>
+*{box-sizing:border-box}
+
+html,body{
+  margin:0;
+  padding:0;
+  width:100%;
+  height:100%;
+  font-family:system-ui,-apple-system,Segoe UI,Roboto,sans-serif;
+  background:#f2f2f2;
+}
+
+/* ===== HEADER ===== */
+header{
+  background:#ff7a00;
+  color:#fff;
+  padding:14px 16px 18px;
+  display:flex;
+  align-items:center;
+  gap:12px;
+}
+
+.logo{
+  width:42px;
+  height:42px;
+  border-radius:10px;
+  background:#fff;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  color:#ff7a00;
+  font-weight:700;
+  font-size:18px;
+}
+
+.header-text{
+  line-height:1.2;
+}
+.header-text h1{
+  font-size:1.2rem;
+  margin:0;
+}
+.header-text div{
+  font-size:0.9rem;
+  opacity:0.95;
+}
+
+/* ===== CONTENT ===== */
+.container{
+  padding:12px;
+  max-width:720px;
+  margin:auto;
+}
+
+.driver{
+  background:#fff;
+  border-radius:16px;
+  padding:14px;
+  margin-bottom:12px;
+  box-shadow:0 2px 6px rgba(0,0,0,.06);
+}
+
+.driver-name{
+  font-size:1.05rem;
+  font-weight:600;
+}
+
+/* progress bar */
+.progress-wrap{
+  background:#e6e6e6;
+  border-radius:20px;
+  height:10px;
+  margin:10px 0 6px;
+  overflow:hidden;
+}
+.progress{
+  height:100%;
+  background:#28a745;
+  width:0%;
+  transition:width .3s ease;
+}
+
+.driver-footer{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+}
+
+.order{
+  font-size:.9rem;
+  color:#555;
+}
+
+.actions button{
+  width:44px;
+  height:44px;
+  font-size:18px;
+  border:none;
+  border-radius:12px;
+  margin-left:6px;
+}
+
+.ok{background:#28a745;color:#fff}
+.del{background:#dc3545;color:#fff}
+
+/* ===== INPUT & BUTTON ===== */
+input{
+  width:100%;
+  padding:14px;
+  font-size:1rem;
+  border-radius:14px;
+  border:1px solid #ccc;
+  margin-top:12px;
+}
+
+.btn{
+  width:100%;
+  padding:14px;
+  font-size:1rem;
+  border-radius:14px;
+  border:none;
+  margin-top:10px;
+}
+
+.add{background:#ff7a00;color:#fff}
+.export{background:#ffc107}
+
+footer{
+  text-align:center;
+  font-size:.75rem;
+  color:#777;
+  margin:14px 0 6px;
+}
+</style>
+</head>
+
+<body>
+
+<header>
+  <div class="logo">SJI</div>
+  <div class="header-text">
+    <h1>SEDULUR JOGJA ISTIMEWA</h1>
+    <div>Antrian Driver Wisata</div>
+  </div>
+</header>
+
+<div class="container">
+  <div id="list"></div>
+
+  <input id="namaBaru" placeholder="Tambah driver baru">
+  <button class="btn add" onclick="tambahDriver()">Tambah Driver</button>
+  <button class="btn export" onclick="exportWA()">Export ke WhatsApp</button>
+
+  <footer>Rotasi adil • Android full screen • Admin only</footer>
+</div>
+
+<script>
+let drivers = JSON.parse(localStorage.getItem("sji_drivers")) || [];
+
+function render(){
+  const list = document.getElementById("list");
+  list.innerHTML="";
+  const max = Math.max(...drivers.map(d=>d.order),1);
+
+  drivers.forEach((d,i)=>{
+    const pct = (d.order/max)*100;
+    list.innerHTML += `
+    <div class="driver">
+      <div class="driver-name">${i+1}. ${d.nama}</div>
+      <div class="progress-wrap">
+        <div class="progress" style="width:${pct}%"></div>
+      </div>
+      <div class="driver-footer">
+        <div class="order">Order: ${d.order}</div>
+        <div class="actions">
+          <button class="ok" onclick="terima(${i})">✔</button>
+          <button class="del" onclick="hapus(${i})">✖</button>
+        </div>
+      </div>
+    </div>`;
+  });
+
+  localStorage.setItem("sji_drivers", JSON.stringify(drivers));
+}
+
+function terima(i){
+  drivers[i].order++;
+  drivers.push(drivers.splice(i,1)[0]);
+  render();
+}
+
+function tambahDriver(){
+  const n=document.getElementById("namaBaru").value.trim();
+  if(!n) return;
+  drivers.push({nama:n,order:0});
+  document.getElementById("namaBaru").value="";
+  render();
+}
+
+function hapus(i){
+  drivers.splice(i,1);
+  render();
+}
+
+function exportWA(){
+  let t="*SEDULUR JOGJA ISTIMEWA*\nAntrian Driver Wisata\n\n";
+  drivers.forEach((d,i)=>t+=`${i+1}. ${d.nama} | Order: ${d.order}\n`);
+  navigator.clipboard.writeText(t);
+  alert("Siap ditempel ke WhatsApp");
+}
+
+if("serviceWorker" in navigator){
+  navigator.serviceWorker.register("service-worker.js");
+}
+
+render();
+</script>
+
+</body>
+</html>
