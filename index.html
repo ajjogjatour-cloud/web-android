@@ -78,35 +78,28 @@ footer{text-align:center;font-size:.75rem;color:#777;margin:14px 0}
 </div>
 
 <script type="module">
-  // Import the functions you need from the SDKs you need
-  import { initializeApp } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-app.js";
-  import { getAnalytics } from "https://www.gstatic.com/firebasejs/12.8.0/firebase-analytics.js";
-  // TODO: Add SDKs for Firebase products that you want to use
-  // https://firebase.google.com/docs/web/setup#available-libraries
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+import { getDatabase, ref, onValue, set } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
-  // Your web app's Firebase configuration
-  // For Firebase JS SDK v7.20.0 and later, measurementId is optional
-  const firebaseConfig = {
-    apiKey: "AIzaSyAw4kQiCa8iZwvynjBJNhOOwMijuGTEup4",
-    authDomain: "antriandriver.firebaseapp.com",
-    projectId: "antriandriver",
-    storageBucket: "antriandriver.firebasestorage.app",
-    messagingSenderId: "154720213699",
-    appId: "1:154720213699:web:c5d677f39ae71889586076",
-    measurementId: "G-F36M39N42J"
-  };
+/* GANTI DENGAN CONFIG ANDA */
+const firebaseConfig = {
+  apiKey: "ISI_API_KEY",
+  authDomain: "ISI.firebaseapp.com",
+  databaseURL: "https://ISI.firebaseio.com",
+  projectId: "ISI",
+  storageBucket: "ISI.appspot.com",
+  messagingSenderId: "ISI",
+  appId: "ISI"
+};
 
-  // Initialize Firebase
-  const app = initializeApp(firebaseConfig);
-  const analytics = getAnalytics(app);
-  
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 const driversRef = ref(db, "drivers");
 
 let drivers = [];
 
-onValue(driversRef, snap=>{
+/* 🔑 INI PEMBUKA onValue YANG TADI HILANG */
+onValue(driversRef, (snap) => {
   drivers = snap.val() || [];
   render();
 });
@@ -115,7 +108,7 @@ function save(){
   set(driversRef, drivers);
 }
 
-window.tambahDriver = ()=>{
+window.tambahDriver = () => {
   const n = document.getElementById("namaBaru").value.trim();
   if(!n) return;
   drivers.push({ nama:n, order:0 });
@@ -123,18 +116,18 @@ window.tambahDriver = ()=>{
   save();
 };
 
-window.terima = i=>{
+window.terima = (i) => {
   drivers[i].order++;
   drivers.push(drivers.splice(i,1)[0]);
   save();
 };
 
-window.hapus = i=>{
+window.hapus = (i) => {
   drivers.splice(i,1);
   save();
 };
 
-window.exportWA = ()=>{
+window.exportWA = () => {
   let t="*SEDULUR JOGJA ISTIMEWA*\nAntrian Driver Wisata\n\n";
   drivers.forEach((d,i)=>t+=`${i+1}. ${d.nama} | Order: ${d.order}\n`);
   navigator.clipboard.writeText(t);
@@ -149,20 +142,20 @@ function render(){
   drivers.forEach((d,i)=>{
     const pct=(d.order/max)*100;
     list.innerHTML+=`
-    <div class="driver">
-      <div class="driver-name">${i+1}. ${d.nama}</div>
-      <div class="progress-wrap">
-        <div class="progress" style="width:${pct}%"></div>
-      </div>
-      <div class="driver-footer">
-        <div class="order">Order: ${d.order}</div>
-        <div class="actions">
-          <button class="ok" onclick="terima(${i})">✔</button>
-          <button class="del" onclick="hapus(${i})">✖</button>
+      <div class="driver">
+        <div class="driver-name">${i+1}. ${d.nama}</div>
+        <div class="progress-wrap">
+          <div class="progress" style="width:${pct}%"></div>
+        </div>
+        <div class="driver-footer">
+          <div class="order">Order: ${d.order}</div>
+          <div class="actions">
+            <button class="ok" onclick="terima(${i})">✔</button>
+            <button class="del" onclick="hapus(${i})">✖</button>
+          </div>
         </div>
       </div>
-    </div>
-  `;
+    `;
   });
 }
 </script>
